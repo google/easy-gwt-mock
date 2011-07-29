@@ -18,7 +18,9 @@ package com.google.gwt.testing.easygwtmock.rebind;
 
 import com.google.gwt.core.ext.GeneratorContext;
 import com.google.gwt.core.ext.TreeLogger;
+import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
+import com.google.gwt.core.ext.typeinfo.JConstructor;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JPackage;
 import com.google.gwt.core.ext.typeinfo.JParameter;
@@ -56,17 +58,17 @@ public class MocksGenerator {
   /**
    * Generates a mock class for {@code interfaceToMock}.
    */
-  String generateMock(JClassType interfaceToMock) {
+  String generateMock(JClassType typeToMock) throws UnableToCompleteException {
   
-    JPackage interfacePackage = interfaceToMock.getPackage();
+    JPackage interfacePackage = typeToMock.getPackage();
     String packageName = interfacePackage == null ? "" : interfacePackage.getName();
-    String newClassName = interfaceToMock.getName().replace(".", "_") + "Mock";
+    String newClassName = typeToMock.getName().replace(".", "_") + "Mock";
     
     // GenericType<Integer> has to generate a different mock implementation than
     // GenericType<String>, that's what we check and do here
-    if (interfaceToMock.isParameterized() != null) {
+    if (typeToMock.isParameterized() != null) {
       StringBuilder typeList = new StringBuilder();
-      for (JClassType genericArg : interfaceToMock.isParameterized().getTypeArgs()) {
+      for (JClassType genericArg : typeToMock.isParameterized().getTypeArgs()) {
         typeList.append(genericArg.getParameterizedQualifiedSourceName());
       }
       newClassName += Integer.toHexString(typeList.toString().hashCode());
@@ -86,82 +88,110 @@ public class MocksGenerator {
     composer.addImport(Method.class.getCanonicalName());
     composer.addImport(Call.class.getCanonicalName());
     composer.addImport(UndeclaredThrowableException.class.getCanonicalName());
-    composer.addImplementedInterface(interfaceToMock.getParameterizedQualifiedSourceName());
+    if (typeToMock.isInterface() != null) {
+      composer.addImplementedInterface(typeToMock.getParameterizedQualifiedSourceName());
+    } else {
+      checkHasDefaultConstructor(typeToMock.isClass());
+      composer.setSuperclass(typeToMock.getParameterizedQualifiedSourceName());
+    }
     
     SourceWriter sourceWriter = composer.createSourceWriter(this.context, printWriter);
     sourceWriter.println();
     
-    List<JMethod> methodsToMock = getMethodsToMock(interfaceToMock);
+    JMethod[] overridableMethods = typeToMock.getOverridableMethods();
+    
+    List<JMethod> methodsToMock = new ArrayList<JMethod>();
+    Set<String> needsDefaultImplementation = new HashSet<String>();
+    for (JMethod method : overridableMethods) {
+      if (isSpecialMethodOfObject(method)) {
+        needsDefaultImplementation.add(method.getName());
+      } else if (method.getParameterTypes().length == 0 && method.getName().equals("getClass")) {
+        // ignore, Bug 5026788 in GWT
+      } else {
+        methodsToMock.add(method);
+      }
+    }
     
     printFields(sourceWriter, methodsToMock);
     printConstructor(sourceWriter, newClassName);
     printMockMethods(sourceWriter, methodsToMock, newClassName);
-    printDefaultMethods(sourceWriter, interfaceToMock);
+    printDefaultMethods(sourceWriter, typeToMock, needsDefaultImplementation);
     
     sourceWriter.commit(this.logger);
     
     return fullNewClassName;
   }
-  
+
+  private boolean isSpecialMethodOfObject(JMethod method) {
+    String name = method.getName();
+    JType[] types = method.getParameterTypes();
+    return types.length == 0 && (name.equals("finalize") ||
+                                 name.equals("hashCode") ||
+                                 name.equals("toString")) ||
+           types.length == 1 && name.equals("equals") &&
+               types[0].getQualifiedSourceName().equals("java.lang.Object");
+  }
+
+  private void checkHasDefaultConstructor(JClassType clazz) throws UnableToCompleteException {
+    JType[] zeroArguments = {};
+    JConstructor constructor = clazz.findConstructor(zeroArguments);
+    if (constructor == null) {
+      logger.log(TreeLogger.ERROR, "Cannot mock " + clazz.getQualifiedSourceName() + "." +
+        " Class does not have a zero-argument constructor", null);
+      throw new UnableToCompleteException();
+    }
+  }
+
   /**
    * Print the default implementation for {@link java.lang.Object} methods.
+   * If typeToMock is a class it will only print default implementations for
+   * methods of Object listed in the methods parameter. If typeToMock is an interface
+   * it will always print default implementations for all methods of Object.
    */
-  private void printDefaultMethods(SourceWriter writer, JClassType typeToMock) {
-    writer.println("public boolean equals(Object obj) {");
-    writer.indent();
-    writer.println("this.mocksControl.unmockableCallTo(\"equals()\");");
-    writer.println("return obj == this;"); // object identity since Mocks don't hold any data
-    writer.outdent();
-    writer.println("}");
-    writer.println();
+  private void printDefaultMethods(SourceWriter writer, JClassType typeToMock, Set<String> methods) {
     
-    writer.println("public String toString() {");
-    writer.indent();
-    writer.println("this.mocksControl.unmockableCallTo(\"toString()\");");
-    writer.println("return \"Mock for %s\";", typeToMock.getName());
-    writer.outdent();
-    writer.println("}");
-    writer.println();
+    // always print default implementations for interfaces
+    boolean isInterface = typeToMock.isInterface() != null;
     
-    writer.println("public int hashCode() {");
-    writer.indent();
-    writer.println("this.mocksControl.unmockableCallTo(\"hashCode()\");");
-    writer.println("return System.identityHashCode(this);"); // default hashCode of java.lang.Object
-    writer.outdent();
-    writer.println("}");
-    writer.println();
-    
-    writer.println("protected void finalize() throws Throwable {");
-    writer.indent();
-    writer.println("this.mocksControl.unmockableCallTo(\"finalize()\");");
-    writer.println("super.finalize();");
-    writer.outdent();
-    writer.println("}");
-    writer.println();
-  }
-  
-  /**
-   * Returns all overridable methods of typeToMock except for those
-   * implemented by {@link java.lang.Object}. We don't want to mock those
-   * and provide special implementations for them.
-   */
-  private List<JMethod> getMethodsToMock(JClassType typeToMock) {
-    List<JMethod> result = new ArrayList<JMethod>();
-    JMethod[] overridableMethods = typeToMock.getOverridableMethods();
-    
-    for (JMethod method : overridableMethods) {
-      String name = method.getName();
-      JType[] types = method.getParameterTypes();
-      if (types.length == 0 && (name.equals("finalize") ||
-                                name.equals("getClass") || // TODO(goderbauer): Bug 5026788 in GWT
-                                name.equals("hashCode") ||
-                                name.equals("toString")) ||
-          types.length == 1 && types[0].getQualifiedSourceName().equals("java.lang.Object")) {
-        continue; // we don't want to mock those methods
-      }
-      result.add(method);
+    if (isInterface || methods.contains("equals")) {
+      writer.println("public boolean equals(Object obj) {");
+      writer.indent();
+      writer.println("this.mocksControl.unmockableCallTo(\"equals()\");");
+      writer.println("return obj == this;"); // object identity since Mocks don't hold any data
+      writer.outdent();
+      writer.println("}");
+      writer.println();
     }
-    return result;
+    
+    if (isInterface || methods.contains("toString")) {
+      writer.println("public String toString() {");
+      writer.indent();
+      writer.println("this.mocksControl.unmockableCallTo(\"toString()\");");
+      writer.println("return \"Mock for %s\";", typeToMock.getName());
+      writer.outdent();
+      writer.println("}");
+      writer.println();
+    }
+    
+    if (isInterface || methods.contains("hashCode")) {
+      writer.println("public int hashCode() {");
+      writer.indent();
+      writer.println("this.mocksControl.unmockableCallTo(\"hashCode()\");");
+      writer.println("return System.identityHashCode(this);"); // hashCode of java.lang.Object
+      writer.outdent();
+      writer.println("}");
+      writer.println();
+    }
+    
+    if (isInterface || methods.contains("finalize")) {
+      writer.println("protected void finalize() throws Throwable {");
+      writer.indent();
+      writer.println("this.mocksControl.unmockableCallTo(\"finalize()\");");
+      writer.println("super.finalize();");
+      writer.outdent();
+      writer.println("}");
+      writer.println();
+    }
   }
   
   /**

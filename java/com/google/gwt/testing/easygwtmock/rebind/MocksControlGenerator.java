@@ -102,15 +102,15 @@ public class MocksControlGenerator extends Generator {
         throw new UnableToCompleteException();
       }
       
-      JClassType interfaceToMock = method.getReturnType().isInterface();
+      JClassType typeToMock = method.getReturnType().isClassOrInterface();
       
-      if (interfaceToMock == null) {
-        logger.log(TreeLogger.ERROR, 
-            method.getReturnType().getQualifiedSourceName() + " is not an interface", null);
+      if (typeToMock == null) {
+        logger.log(TreeLogger.ERROR, method.getReturnType().getQualifiedSourceName() + 
+            " is not an interface or a class", null);
         throw new UnableToCompleteException();
       }
       
-      String mockClassName = mocksGenerator.generateMock(interfaceToMock);
+      String mockClassName = mocksGenerator.generateMock(typeToMock);
       
       writer.println("%s {", method.getReadableDeclaration(false, false, false, false, true));
       writer.indent();

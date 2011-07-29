@@ -105,6 +105,7 @@
     <copy todir="${easygwtmock.tests.output}">
       <fileset dir="${easygwtmock.tests.src}">
         <include name="com/google/gwt/testing/easygwtmock/client/**/*GwtTest.java" />
+        <include name="com/google/gwt/testing/easygwtmock/client/dummyclasses/*.java" />
       </fileset>
     </copy>
   </target>
