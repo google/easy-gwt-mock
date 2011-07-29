@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<project name="Easy GWT Mock" default="jar">
+
+  <property environment="env"/>
+
+  <!-- GWT installation directory; can be passed as Ant property gwt.home,
+       or can be provided by system property GWT_HOME. -->
+  <property name="gwt.home" value="${env.GWT_HOME}"/> 
+
+  <property name="easygwtmock.base" value="out"/>
+  <property name="easygwtmock.output" value="${easygwtmock.base}/bin"/>
+  <property name="easygwtmock.src" value="java"/>
+  <property name="easygwtmock.jar" value="${easygwtmock.base}/EasyGwtMock.jar"/>
+
+  <path id="library.gwt-user.classpath">
+    <pathelement location="${gwt.home}/gwt-user.jar"/>
+  </path>
+
+  <path id="library.gwt-dev.classpath">
+    <fileset dir="${gwt.home}" includes="gwt-dev*.jar"/>
+  </path>
+
+  <path id="easygwtmock.classpath">
+    <path refid="library.gwt-user.classpath"/>
+    <path refid="library.gwt-dev.classpath"/>
+  </path>
+
+  <target name="clean" description="remove all generated files">
+    <delete dir="${easygwtmock.base}"/>
+  </target>
+
+  <target name="compile" description="compile the Java source code to class files">
+    <mkdir dir="${easygwtmock.output}"/>
+    <javac srcdir="${easygwtmock.src}" destdir="${easygwtmock.output}">
+      <classpath refid="easygwtmock.classpath"/>
+    </javac>
+    <copy todir="${easygwtmock.output}">
+      <fileset dir="${easygwtmock.src}">
+        <include name="**/*.java"/>
+        <include name="com/google/gwt/testing/easygwtmock/easygwtmock.gwt.xml"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="jar" depends='compile' description="create distribution jar">
+    <jar destfile="${easygwtmock.jar}">
+      <fileset dir="${easygwtmock.output}"/>
+    </jar>
+  </target>
+
+  <!-- tests-->
+
+  <property name="easygwtmock.tests.output" value="${easygwtmock.base}/tests"/>
+  <property name="easygwtmock.tests.src" value="javatests"/>
+
+  <path id="library.junit.classpath">
+    <pathelement location="lib/junit.jar"/>
+  </path>
+
+  <path id="library.easymock.classpath">
+    <pathelement location="lib/easymock.jar"/>
+  </path>
+
+  <path id="library.asm.classpath">
+    <pathelement location="lib/asm.jar"/>
+  </path>
+
+  <path id="library.cglib.classpath">
+    <pathelement location="lib/cglib.jar"/>
+  </path>
+
+  <path id="library.objenesis.classpath">
+    <pathelement location="lib/objenesis.jar"/>
+  </path>
+
+  <path id="library.gwt-servlet-deps.classpath">
+    <fileset dir="${gwt.home}" includes="gwt-servlet-deps.jar"/>
+  </path>
+
+  <path id="library.gwt-validation.classpath">
+    <fileset dir="${gwt.home}" includes="validation-api-*.jar"/>
+  </path>
+
+  <path id="easygwtmock.tests.classpath">
+    <path refid="library.gwt-user.classpath"/>
+    <path refid="library.gwt-dev.classpath"/>
+    <path refid="library.gwt-servlet-deps.classpath"/>
+    <path refid="library.gwt-validation.classpath"/>
+    <path refid="library.junit.classpath"/>
+    <path refid="library.easymock.classpath"/>
+    <path refid="library.objenesis.classpath"/>
+    <path refid="library.cglib.classpath"/>
+    <path refid="library.asm.classpath"/>
+    <pathelement location="${easygwtmock.tests.output}"/>
+    <pathelement location="${easygwtmock.jar}"/>
+  </path>
+  
+  <target name="compile.tests" depends="jar" description="Compile tests.">
+    <mkdir dir="${easygwtmock.tests.output}"/>
+    <javac srcdir="${easygwtmock.tests.src}" destdir="${easygwtmock.tests.output}">
+      <include name="com/google/gwt/testing/easygwtmock/client/**/*.java" />
+      <classpath refid="easygwtmock.tests.classpath"/>
+    </javac>
+
+    <copy todir="${easygwtmock.tests.output}">
+      <fileset dir="${easygwtmock.tests.src}">
+        <include name="com/google/gwt/testing/easygwtmock/client/**/*GwtTest.java" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="test" depends="test.java, test.gwt" description="Run all tests."/>
+
+  <target name="test.java" depends="compile.tests" description="Run Java tests.">
+    <sequential>
+      <mkdir dir="${easygwtmock.tests.output}/java/reports"/>
+
+      <junit printsummary="yes" fork="yes" showoutput="true" failureproperty="junit.failure" dir="${easygwtmock.tests.output}/java">
+        <formatter type="brief" />
+        <formatter type="xml"/>
+
+        <classpath refid="easygwtmock.tests.classpath"/>
+        <batchtest todir="${easygwtmock.tests.output}/java/reports">
+          <fileset dir="${easygwtmock.tests.output}">
+            <include name="com/google/gwt/testing/easygwtmock/client/**/*JavaTest.class"/>
+          </fileset>
+        </batchtest>
+      </junit>
+
+      <junitreport todir="${easygwtmock.tests.output}/java/reports">
+        <fileset dir="${easygwtmock.tests.output}/java/reports"/>
+        <report todir="${easygwtmock.tests.output}/java/reports/html"/>
+      </junitreport>
+
+      <fail if="junit.failure"
+            message="Tests failed. See reports in ${easygwtmock.tests.output}/java/reports"/>
+    </sequential>
+  </target>
+
+  <target name="test.gwt" depends="compile.tests" description="Run Gwt tests.">
+    <sequential>
+      <mkdir dir="${easygwtmock.tests.output}/gwt/reports"/>
+      <mkdir dir="${easygwtmock.tests.output}/gwt/out"/>
+      <mkdir dir="${easygwtmock.tests.output}/gwt/gen"/>
+      <junit dir="${easygwtmock.tests.output}/gwt" failureproperty="junit.failure" printSummary="yes" fork="true">
+        <formatter type="xml" />
+        <formatter usefile="false" type="plain" />
+        <jvmarg value="-Dgwt.args=-gen gen -out out" />
+        <classpath refid="easygwtmock.tests.classpath"/>
+        <batchtest todir="${easygwtmock.tests.output}/gwt/reports">
+          <fileset dir="${easygwtmock.tests.output}">
+            <include name="com/google/gwt/testing/easygwtmock/client/**/*GwtTest.java" />
+          </fileset>
+       </batchtest>
+      </junit>
+
+      <junitreport todir="${easygwtmock.tests.output}/gwt/reports">
+        <fileset dir="${easygwtmock.tests.output}/gwt/reports"/>
+        <report todir="${easygwtmock.tests.output}/gwt/reports/html"/>
+      </junitreport>
+
+      <fail if="junit.failure"
+            message="Tests failed. See reports in ${easygwtmock.tests.output}/gwt/reports"/>
+    </sequential>
+  </target>
+</project>

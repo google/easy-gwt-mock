@@ -1,0 +1,10 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <source path="client"/>
+  <source path="client/internal"/>
+  <source path="client/internal/matchers"/>
+
+  <generate-with class="com.google.gwt.testing.easygwtmock.rebind.MocksControlGenerator">
+    <when-type-assignable class="com.google.gwt.testing.easygwtmock.client.MocksControl" />
+  </generate-with>
+</module>
