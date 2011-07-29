@@ -47,6 +47,9 @@ public class StacktraceGwtTest extends GWTTestCase {
   }
   
   public void testUnexpectedMethod() {
+    if (GWT.isScript()) {
+      return; // no real stacktrace in javaScript!
+    }
     ctrl.replay();
     
     try {
@@ -60,6 +63,9 @@ public class StacktraceGwtTest extends GWTTestCase {
   }
   
   public void testVerify() {
+    if (GWT.isScript()) {
+       return; // no real stacktrace in javaScript!
+    }
     ctrl.expect(mock.foo()).andReturn(32);
     
     ctrl.replay();
@@ -75,6 +81,9 @@ public class StacktraceGwtTest extends GWTTestCase {
   }
   
   public void testReplay() {
+    if (GWT.isScript()) {
+      return; // no real stacktrace in javaScript!
+    }
     ctrl.expect(mock.foo()).andReturn(32);
     
     ctrl.replay();
