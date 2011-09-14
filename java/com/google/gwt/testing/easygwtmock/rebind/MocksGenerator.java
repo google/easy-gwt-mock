@@ -91,7 +91,6 @@ public class MocksGenerator {
     if (typeToMock.isInterface() != null) {
       composer.addImplementedInterface(typeToMock.getParameterizedQualifiedSourceName());
     } else {
-      checkHasDefaultConstructor(typeToMock.isClass());
       composer.setSuperclass(typeToMock.getParameterizedQualifiedSourceName());
     }
     
@@ -113,7 +112,7 @@ public class MocksGenerator {
     }
     
     printFields(sourceWriter, methodsToMock);
-    printConstructor(sourceWriter, newClassName);
+    printConstructors(sourceWriter, newClassName, typeToMock.getConstructors());
     printMockMethods(sourceWriter, methodsToMock, newClassName);
     printDefaultMethods(sourceWriter, typeToMock, needsDefaultImplementation);
     
@@ -130,16 +129,6 @@ public class MocksGenerator {
                                  name.equals("toString")) ||
            types.length == 1 && name.equals("equals") &&
                types[0].getQualifiedSourceName().equals("java.lang.Object");
-  }
-
-  private void checkHasDefaultConstructor(JClassType clazz) throws UnableToCompleteException {
-    JType[] zeroArguments = {};
-    JConstructor constructor = clazz.findConstructor(zeroArguments);
-    if (constructor == null) {
-      logger.log(TreeLogger.ERROR, "Cannot mock " + clazz.getQualifiedSourceName() + "." +
-        " Class does not have a zero-argument constructor", null);
-      throw new UnableToCompleteException();
-    }
   }
 
   /**
@@ -248,22 +237,73 @@ public class MocksGenerator {
     sourceWriter.println(throwableArray.toString());
     sourceWriter.println(argumentTypesArray.toString());
     sourceWriter.println(methodArray.toString());
-    sourceWriter.println("private final MocksControlBase mocksControl;");
+    sourceWriter.println("private MocksControlBase mocksControl;");
     sourceWriter.println();
   }
 
   /**
-   * Prints constructor for mock class.
+   * Prints each constructor for the mock class, and a hidden init method.
    */
-  private void printConstructor(SourceWriter sourceWriter, String newClassName) {
-    sourceWriter.println("public  %s(MocksControlBase mocksControl) {", newClassName);
-    sourceWriter.indent();
-    sourceWriter.println("this.mocksControl = mocksControl;");
-    sourceWriter.outdent();
-    sourceWriter.println("}");
-    sourceWriter.println();
+  private void printConstructors(SourceWriter out, String newClassName,
+      JConstructor[] constructors) {
+
+    if (constructors.length == 0) {
+      // probably an interface
+      out.print("public  %s() {}", newClassName);
+    }
+
+    for (JConstructor constructor : constructors) {
+      out.print("public  %s(", newClassName);
+      printMatchingParameters(out, constructor);
+      out.println(") {");
+
+      out.indent();
+      printMatchingSuperCall(out, constructor);
+      out.outdent();
+
+      out.println("}");
+      out.println();
+    }
+
+    out.println("public %s __mockInit(MocksControlBase newValue) {", newClassName);
+    out.indent();
+    out.println("this.mocksControl = newValue;");
+    out.println("return this;");
+    out.outdent();
+    out.println("}");
+    out.println();
   }
-  
+
+  private void printMatchingParameters(SourceWriter out, JConstructor constructorToCall) {
+    JParameter[] params = constructorToCall.getParameters();
+    for (int i = 0; i < params.length; i++) {
+      if (i > 0) {
+        out.print(", ");
+      }
+      JParameter param = params[i];
+      out.print(param.getType().getParameterizedQualifiedSourceName());
+      out.print(" ");
+      out.print(param.getName());
+    }
+  }
+
+  private void printMatchingSuperCall(SourceWriter out, JConstructor constructorToCall) {
+    if (constructorToCall.getParameters().length == 0) {
+      return; // will be added automatically
+    }
+
+    out.print("super(");
+
+    JParameter[] params = constructorToCall.getParameters();
+    for (int i = 0; i < params.length; i++) {
+      if (i > 0) {
+        out.print(", ");
+      }
+      out.print(params[i].getName());
+    }
+    out.println(");");
+  }
+
   /**
    * Generates and prints the actual mock versions of the methods.
    */

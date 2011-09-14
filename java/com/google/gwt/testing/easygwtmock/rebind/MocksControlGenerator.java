@@ -21,8 +21,11 @@ import com.google.gwt.core.ext.GeneratorContext;
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
+import com.google.gwt.core.ext.typeinfo.JConstructor;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JPackage;
+import com.google.gwt.core.ext.typeinfo.JParameter;
+import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.testing.easygwtmock.client.MocksControl;
 import com.google.gwt.testing.easygwtmock.client.Nice;
@@ -89,42 +92,94 @@ public class MocksControlGenerator extends Generator {
     JClassType markerInterface = typeOracle.findType(MocksControl.class.getCanonicalName());
     
     Set<String> reservedNames = getMethodNames(composer.getSuperclassName(), logger, typeOracle);
-    
+
+    // Report one error per method in the control interface. They are likely to be independent,
+    // so it's a bit nicer for the user.
+    boolean failed = false;
     for (JMethod method : mockControlInterface.getOverridableMethods()) {
       if (method.getEnclosingType().equals(markerInterface)) {
         // Method is implemented in MocksControlBase
         continue;
       }
+
       if (reservedNames.contains(method.getName())) {
         // Method name is already used in base class and method should not be overwritten!
         logger.log(TreeLogger.ERROR, method.getName() + 
             " is a reserved name. Do not use it in the extended MocksControl interface", null);
-        throw new UnableToCompleteException();
+        failed = true;
+        continue;
       }
-      
+
       JClassType typeToMock = method.getReturnType().isClassOrInterface();
-      
+
       if (typeToMock == null) {
-        logger.log(TreeLogger.ERROR, method.getReturnType().getQualifiedSourceName() + 
+        logger.log(TreeLogger.ERROR, method.getReturnType().getQualifiedSourceName() +
             " is not an interface or a class", null);
-        throw new UnableToCompleteException();
+        failed = true;
+        continue;
       }
-      
-      String mockClassName = mocksGenerator.generateMock(typeToMock);
-      
-      writer.println("%s {", method.getReadableDeclaration(false, false, false, false, true));
-      writer.indent();
-      if (isNiceMock(method, mockControlInterface)) {
-        writer.println("return this.setToNice(new %s(this));", mockClassName);
+
+      if (typeToMock.isInterface() != null) {
+
+        if (method.getParameterTypes().length != 0) {
+          String methodName = mockControlInterface.getSimpleSourceName() + "." + method.getName();
+          logger.log(TreeLogger.ERROR,
+              "This method should not have parameters because it creates Ua mock of an interface: " +
+              methodName, null);
+          failed = true;
+          continue;
+        }
+
       } else {
-        writer.println("return new %s(this);", mockClassName);
+
+        JConstructor constructorToCall = typeToMock.findConstructor(method.getParameterTypes());
+        if (constructorToCall == null) {
+          String methodName = mockControlInterface.getSimpleSourceName() + "." + method.getName();
+          logger.log(TreeLogger.ERROR,
+              "Cannot find matching constructor to call for " + methodName, null);
+          failed = true;
+          continue;
+        }
       }
-      writer.outdent();
-      writer.println("}");
+
+      String mockClassName = mocksGenerator.generateMock(typeToMock);
+
+      printFactoryMethod(writer, method, mockControlInterface, mockClassName);
     }
-    
+
+    if (failed) {
+      throw new UnableToCompleteException();
+    }
+
     writer.commit(logger);
     return fullNewClassName;
+  }
+
+  private void printFactoryMethod(SourceWriter out, JMethod methodToImplement,
+      JClassType mockControlInterface, String classToCreate) {
+    out.println("%s {", methodToImplement.getReadableDeclaration(false, false, false, false, true));
+    out.indent();
+    if (isNiceMock(methodToImplement, mockControlInterface)) {
+      out.print("return this.setToNice(new %s(", classToCreate);
+      printMatchingParameters(out, methodToImplement);
+      out.println(").__mockInit(this));");
+    } else {
+      out.print("return new %s(", classToCreate);
+      printMatchingParameters(out, methodToImplement);
+      out.println(").__mockInit(this);");
+    }
+    out.outdent();
+    out.println("}");
+  }
+
+  private void printMatchingParameters(SourceWriter out, JMethod methodToImplement) {
+    JParameter[] params = methodToImplement.getParameters();
+    for (int i = 0; i < params.length; i++) {
+      if (i > 0) {
+        out.print(", ");
+      }
+      out.print(params[i].getName());
+    }
   }
 
   private boolean isNiceMock(JMethod method, JClassType mockControlInterface) {

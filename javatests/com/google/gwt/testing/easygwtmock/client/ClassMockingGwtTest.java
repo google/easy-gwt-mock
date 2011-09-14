@@ -19,6 +19,7 @@ package com.google.gwt.testing.easygwtmock.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.testing.easygwtmock.client.dummyclasses.ClassToMock;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.dummyclasses.OneArgClassToMock;
 
 /**
  * Can we mock classes?
@@ -29,6 +30,14 @@ public class ClassMockingGwtTest extends GWTTestCase {
 
   interface MyControl extends MocksControl {
     ClassToMock getMock();
+    OneArgClassToMock getOneArgMock(String arg);
+    ZeroArgSubClass getSubClassMock();
+  }
+
+  public static class ZeroArgSubClass extends OneArgClassToMock {
+    public ZeroArgSubClass() {
+      super("fixed");
+    }
   }
 
   private MyControl ctrl;
@@ -53,7 +62,28 @@ public class ClassMockingGwtTest extends GWTTestCase {
     
     ctrl.verify();
   }
-  
+
+  public void testConstructMockWithArgument() throws Exception {
+    OneArgClassToMock mock = ctrl.getOneArgMock("hello");
+    assertEquals("hello", mock.arg);
+  }
+
+  public void testConstructMockWithFixedArgument() throws Exception {
+    ZeroArgSubClass mock = ctrl.getSubClassMock();
+    assertEquals("fixed", mock.arg);
+  }
+
+  public void testPartialMock() throws Exception {
+    OneArgClassToMock mock = ctrl.getOneArgMock("earthling");
+
+    ctrl.expect(mock.getGreeting()).andReturn("Greetings,");
+    ctrl.replay();
+
+    assertEquals("Greetings, earthling!", mock.makeMessage());
+
+    ctrl.verify();
+  }
+
   public void testFinalMethod() {
     assertEquals("I am final", mock.finalMethod());
   }

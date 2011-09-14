@@ -43,4 +43,3 @@ public class ClassToMock {
     return true;
   }
 }
-// Test comment
