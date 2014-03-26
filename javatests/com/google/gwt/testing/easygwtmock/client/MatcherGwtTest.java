@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests the interaction between argument matchers and framework.
  * 
  * @author Michael Goderbauer
  */
-public class MatcherGwtTest extends GWTTestCase {
+public class MatcherGwtTest extends BaseGwtTestCase {
 
   private InterfaceToMock mock;
   private MyIMockControl ctrl;
@@ -123,10 +123,5 @@ public class MatcherGwtTest extends GWTTestCase {
       buffer.append("isOdd()");
     }
     
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

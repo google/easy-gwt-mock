@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * We test if we can mock an interface that extends another interface.
  * 
  * @author Michael Goderbauer
  */
-public class MockExtendedInterfacesGwtTest extends GWTTestCase {
+public class MockExtendedInterfacesGwtTest extends BaseGwtTestCase {
 
   interface BaseInterface {
     void baseDoSomething();
@@ -51,10 +51,5 @@ public class MockExtendedInterfacesGwtTest extends GWTTestCase {
     mock.childDoSomething();
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

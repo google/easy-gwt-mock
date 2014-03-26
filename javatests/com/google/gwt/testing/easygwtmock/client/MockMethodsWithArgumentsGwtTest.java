@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * We test if the expected arguments to a method can be specified.
  * 
  * @author Michael Goderbauer
  */
-public class MockMethodsWithArgumentsGwtTest extends GWTTestCase {
+public class MockMethodsWithArgumentsGwtTest extends BaseGwtTestCase {
 
   private InterfaceToMock mock;
   private MyIMockControl ctrl;
@@ -108,10 +108,5 @@ public class MockMethodsWithArgumentsGwtTest extends GWTTestCase {
     assertTrue("should have thrown exception", exceptionThrown);
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

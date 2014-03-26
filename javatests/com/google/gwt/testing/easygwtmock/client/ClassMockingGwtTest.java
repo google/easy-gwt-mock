@@ -17,8 +17,8 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 import com.google.gwt.testing.easygwtmock.client.dummyclasses.ClassToMock;
-import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.testing.easygwtmock.client.dummyclasses.OneArgClassToMock;
 
 /**
@@ -26,7 +26,7 @@ import com.google.gwt.testing.easygwtmock.client.dummyclasses.OneArgClassToMock;
  * 
  * @author Michael Goderbauer
  */
-public class ClassMockingGwtTest extends GWTTestCase {
+public class ClassMockingGwtTest extends BaseGwtTestCase {
 
   interface MyControl extends MocksControl {
     ClassToMock getMock();
@@ -94,10 +94,5 @@ public class ClassMockingGwtTest extends GWTTestCase {
   
   public void testFinalEquals() {
     assertTrue("should be true", mock.equals(null));
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

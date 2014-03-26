@@ -37,7 +37,7 @@
     <copy todir="${easygwtmock.output}">
       <fileset dir="${easygwtmock.src}">
         <include name="**/*.java"/>
-        <include name="com/google/gwt/testing/easygwtmock/easygwtmock.gwt.xml"/>
+        <include name="com/google/gwt/testing/easygwtmock/Easygwtmock.gwt.xml"/>
       </fileset>
     </copy>
   </target>
@@ -95,10 +95,18 @@
     <pathelement location="${easygwtmock.jar}"/>
   </path>
   
-  <target name="compile.tests" depends="jar" description="Compile tests.">
+  <target name="compile.test.java" depends="jar" description="Compile Java tests.">
     <mkdir dir="${easygwtmock.tests.output}"/>
     <javac srcdir="${easygwtmock.tests.src}" destdir="${easygwtmock.tests.output}">
-      <include name="com/google/gwt/testing/easygwtmock/client/**/*.java" />
+      <include name="com/google/gwt/testing/easygwtmock/client/**/*JavaTest.java" />
+      <classpath refid="easygwtmock.tests.classpath"/>
+    </javac>
+  </target>
+
+  <target name="compile.test.gwt" depends="jar" description="Compile GWT tests.">
+    <mkdir dir="${easygwtmock.tests.output}"/>
+    <javac srcdir="${easygwtmock.tests.src}" destdir="${easygwtmock.tests.output}">
+      <include name="com/google/gwt/testing/easygwtmock/client/**/*GwtTest.java" />
       <classpath refid="easygwtmock.tests.classpath"/>
     </javac>
 
@@ -106,13 +114,14 @@
       <fileset dir="${easygwtmock.tests.src}">
         <include name="com/google/gwt/testing/easygwtmock/client/**/*GwtTest.java" />
         <include name="com/google/gwt/testing/easygwtmock/client/dummyclasses/*.java" />
+        <include name="com/google/gwt/testing/easygwtmock/client/BaseGwtTestCase.java" />
       </fileset>
     </copy>
   </target>
 
   <target name="test" depends="test.java, test.gwt" description="Run all tests."/>
 
-  <target name="test.java" depends="compile.tests" description="Run Java tests.">
+  <target name="test.java" depends="compile.test.java" description="Run Java tests.">
     <sequential>
       <mkdir dir="${easygwtmock.tests.output}/java/reports"/>
 
@@ -138,15 +147,15 @@
     </sequential>
   </target>
 
-  <target name="test.gwt" depends="compile.tests" description="Run Gwt tests.">
+  <target name="test.gwt" depends="compile.test.gwt" description="Run Gwt tests.">
     <sequential>
       <mkdir dir="${easygwtmock.tests.output}/gwt/reports"/>
-      <mkdir dir="${easygwtmock.tests.output}/gwt/out"/>
+      <mkdir dir="${easygwtmock.tests.output}/gwt/war"/>
       <mkdir dir="${easygwtmock.tests.output}/gwt/gen"/>
       <junit dir="${easygwtmock.tests.output}/gwt" failureproperty="junit.failure" printSummary="yes" fork="true">
         <formatter type="xml" />
         <formatter usefile="false" type="plain" />
-        <jvmarg value="-Dgwt.args=-gen gen -out out" />
+        <jvmarg value="-Dgwt.args=-gen gen -war war" />
         <classpath refid="easygwtmock.tests.classpath"/>
         <batchtest todir="${easygwtmock.tests.output}/gwt/reports">
           <fileset dir="${easygwtmock.tests.output}">

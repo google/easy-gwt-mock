@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests various framework misuse cases.
  * 
  * @author Michael Goderbauer
  */
-public class FrameworkMissuseGwtTest extends GWTTestCase {
+public class FrameworkMissuseGwtTest extends BaseGwtTestCase {
 
   interface InterfaceToMock {
     void doSomething(int e);
@@ -73,10 +73,5 @@ public class FrameworkMissuseGwtTest extends GWTTestCase {
     ctrl.replay();
     mock.doSomething(2);
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

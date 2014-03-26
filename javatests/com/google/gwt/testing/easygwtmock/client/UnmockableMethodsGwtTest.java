@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Test behavior of unmockable toString(), equals(), hashCode()
  * 
  * @author Michael Goderbauer
  */
-public class UnmockableMethodsGwtTest extends GWTTestCase {
+public class UnmockableMethodsGwtTest extends BaseGwtTestCase {
   
   interface MyControl extends MocksControl {
     ToMock getMock();
@@ -107,10 +107,5 @@ public class UnmockableMethodsGwtTest extends GWTTestCase {
     assertEquals("Mock for UnmockableMethodsGwtTest.ToMock", mock.toString());
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

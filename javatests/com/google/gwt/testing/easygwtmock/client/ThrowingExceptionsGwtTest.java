@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests .andThrows() function of ExpectationSetters
  * 
  * @author Michael Goderbauer
  */
-public class ThrowingExceptionsGwtTest extends GWTTestCase {
+public class ThrowingExceptionsGwtTest extends BaseGwtTestCase {
 
   interface MyControl extends MocksControl {
     ToMock getMock();
@@ -143,11 +143,6 @@ public class ThrowingExceptionsGwtTest extends GWTTestCase {
     }
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
   
   class MyException extends Exception {

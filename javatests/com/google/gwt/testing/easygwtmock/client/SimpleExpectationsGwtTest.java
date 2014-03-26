@@ -17,7 +17,7 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * We only test if we can record simple expectations (e. g. method x gets invoked")
@@ -25,7 +25,7 @@ import com.google.gwt.junit.client.GWTTestCase;
  * 
  * @author Michael Goderbauer
  */
-public class SimpleExpectationsGwtTest extends GWTTestCase {
+public class SimpleExpectationsGwtTest extends BaseGwtTestCase {
   
   private InterfaceToMock mock;
   private MyIMockControl ctrl;
@@ -106,11 +106,6 @@ public class SimpleExpectationsGwtTest extends GWTTestCase {
     assertTrue("should have thrown exception", exceptionThrown);
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }
 

@@ -34,6 +34,13 @@ public class CaptureJavaTest extends TestCase {
     capture = new Capture<Integer>();
   }
   
+  public void testCreate() {
+    String test = "test";
+    Capture<String> captureString = Capture.create();
+    captureString.captureValue(test);
+    assertEquals(test, captureString.getFirstValue());
+  }
+
   public void testGetValues() {
     assertTrue("should be empty", capture.getValues().isEmpty());
     

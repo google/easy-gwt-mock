@@ -1,0 +1,9 @@
+In order to run the tests you need to place the jars of the following libaries
+into this dir:
+
+- junit.jar
+- easymock.jar
+- asm.jar
+- cglib.jar
+- objenesis.jar
+

@@ -17,7 +17,7 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.List;
  * 
  * @author Michael Goderbauer
  */
-public class AnswerGwtTest extends GWTTestCase {
+public class AnswerGwtTest extends BaseGwtTestCase {
   
   interface MyControl extends MocksControl {
     ToMock getMock();
@@ -167,11 +167,6 @@ public class AnswerGwtTest extends GWTTestCase {
     }
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 
   class MyIAnswer implements Answer<Integer> {

@@ -17,7 +17,7 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -25,7 +25,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * 
  * @author Michael Goderbauer
  */
-public class CallbackGwtTest extends GWTTestCase {
+public class CallbackGwtTest extends BaseGwtTestCase {
   interface MyControl extends MocksControl {
     ToMock getMock();
   }
@@ -180,11 +180,6 @@ public class CallbackGwtTest extends GWTTestCase {
       fail("should have thrown exception");
     } catch (IllegalArgumentException expected) {
     }
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
   
   class MyCallback <T> implements AsyncCallback<T> {

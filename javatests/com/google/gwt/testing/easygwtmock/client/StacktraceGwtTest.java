@@ -17,7 +17,7 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests, if the stacktrace is cut properly to hide EasyGwtMock internals.
@@ -27,7 +27,7 @@ import com.google.gwt.junit.client.GWTTestCase;
  * @author Michael Goderbauer
  *
  */
-public class StacktraceGwtTest extends GWTTestCase {
+public class StacktraceGwtTest extends BaseGwtTestCase {
 
   interface MyControl extends MocksControl {
     ComplexType getMock();
@@ -96,10 +96,5 @@ public class StacktraceGwtTest extends GWTTestCase {
           "com.google.gwt.testing.easygwtmock.client.internal.MocksControlBase.replay",
           stackFrame.getClassName() + "." + stackFrame.getMethodName());
     }
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

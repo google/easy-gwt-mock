@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests generating mocks of generic interfaces
  * 
  * @author Michael Goderbauer
  */
-public class GenericInterfacesGwtTest extends GWTTestCase {
+public class GenericInterfacesGwtTest extends BaseGwtTestCase {
 
   interface MyControl extends MocksControl {
     ToMock<String> getStringMock();
@@ -78,10 +78,4 @@ public class GenericInterfacesGwtTest extends GWTTestCase {
     ToMock<String> anotherStringMock = ctrl.getAnotherStringMock();
     assertSame(stringMock.getClass(), anotherStringMock.getClass());
   }
-
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
-  }
-
 }

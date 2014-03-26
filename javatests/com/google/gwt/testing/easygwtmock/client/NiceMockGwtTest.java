@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests the behavior of nice mocks
  * 
  * @author Michael Goderbauer
  */
-public class NiceMockGwtTest extends GWTTestCase {
+public class NiceMockGwtTest extends BaseGwtTestCase {
 
   interface ToMock {
     String returnString();
@@ -177,10 +177,5 @@ public class NiceMockGwtTest extends GWTTestCase {
     assertTrue("should have thrown exception", exceptionThrown);
     
     ctrl.verify();
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

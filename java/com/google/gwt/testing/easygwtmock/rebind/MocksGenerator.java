@@ -311,8 +311,7 @@ public class MocksGenerator {
                                 String newClassName) {
     int methodNo = 0;
     for (JMethod method : methodsToMock) {
-      sourceWriter.println("%s {", method.getReadableDeclaration(false, true, false, false, true)
-          .replace("transient", "")); //TODO(goderbauer): known GWT bug, fixed in trunk
+      sourceWriter.println("%s {", method.getReadableDeclaration(false, true, false, false, true));
       sourceWriter.indent();
       printMockMethodBody(sourceWriter, method, methodNo++, newClassName);
       sourceWriter.outdent();

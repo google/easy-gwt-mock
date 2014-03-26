@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * We test setting ranges on expected calls.
  * 
  * @author Michael Goderbauer
  */
-public class RangeGwtTest extends GWTTestCase {
+public class RangeGwtTest extends BaseGwtTestCase {
 
   interface MyControl extends MocksControl {
     ToMock getMock();
@@ -223,10 +223,5 @@ public class RangeGwtTest extends GWTTestCase {
       fail("should have thrown exception");
     } catch (IllegalArgumentException expected) {
     }
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * We test the generation of mock classes for interfaces with vararg methods.
  * 
  * @author Michael Goderbauer
  */
-public class MockMethodsWithVarArgsGwtTest extends GWTTestCase {
+public class MockMethodsWithVarArgsGwtTest extends BaseGwtTestCase {
 
   interface InterfaceToMock {
     void foo1(int i, Object...a);
@@ -69,10 +69,5 @@ public class MockMethodsWithVarArgsGwtTest extends GWTTestCase {
     mock.foo9('A', 'B', 'C');
     
     ctrl.verify();
-  }
-
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

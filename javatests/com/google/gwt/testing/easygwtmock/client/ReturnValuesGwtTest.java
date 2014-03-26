@@ -17,14 +17,14 @@
 package com.google.gwt.testing.easygwtmock.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.testing.easygwtmock.client.BaseGwtTestCase;
 
 /**
  * Tests if return values can be specified.
  * 
  * @author Michael Goderbauer
  */
-public class ReturnValuesGwtTest extends GWTTestCase {
+public class ReturnValuesGwtTest extends BaseGwtTestCase {
 
   interface MyControl extends MocksControl {
     ToMock getMock();
@@ -118,10 +118,5 @@ public class ReturnValuesGwtTest extends GWTTestCase {
       fail();
     } catch (AssertionError expected) {
     }
-  }
-  
-  @Override
-  public String getModuleName() {
-    return "com.google.gwt.testing.easygwtmock.easygwtmock";
   }
 }

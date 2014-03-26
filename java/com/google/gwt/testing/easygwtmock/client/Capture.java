@@ -33,6 +33,16 @@ public class Capture<T> {
   private List<T> values = new ArrayList<T>();
   
   /**
+   * Builds a new {@link Capture} with inferred type.
+   *
+   * @param <T> the generic type to be captured
+   * @return the new {@code Capture}
+   */
+  public static <T> Capture<T> create() {
+    return new Capture<T>();
+  }
+
+  /**
    * Will reset capture to a "nothing captured yet" state
    */
   public void reset() {
