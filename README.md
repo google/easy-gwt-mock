@@ -69,7 +69,7 @@ ctrl.replay();
 
 ctrl.verify();
 ```
-That’s it! If you want to learn more about the semantic of `anyTimes()`, `expectLastCall()`, `once()`, etc. see the [EasyMock documentation](http://www.easymock.org/EasyMock3_0_Documentation.html).
+That’s it! If you want to learn more about the semantic of `anyTimes()`, `expectLastCall()`, `once()`, etc. see the [EasyMock documentation](http://easymock.org/user-guide.html).
 
 
 ## Using Argument Matchers ##
